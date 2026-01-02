@@ -1,0 +1,18 @@
+DELIMITER $$
+
+CREATE TRIGGER before_employee_delete
+BEFORE DELETE ON Employees
+FOR EACH ROW
+BEGIN
+    DECLARE rowcount INT;
+    SELECT COUNT(*) INTO rowcount
+    FROM Departments
+    WHERE Id = OLD.DepartmentId;
+    IF rowcount > 0 THEN
+        UPDATE Departments
+        SET EmployeeCount = EmployeeCount - 1
+        WHERE Id = OLD.DepartmentId;
+    END IF;
+END $$
+
+DELIMITER ;
