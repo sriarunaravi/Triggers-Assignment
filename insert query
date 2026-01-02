@@ -1,0 +1,31 @@
+use Triggerss;
+CREATE TABLE Departments (
+    Id INT AUTO_INCREMENT PRIMARY KEY,
+    Name VARCHAR(100) NOT NULL,
+    EmployeeCount INT NOT NULL
+);
+drop table Departments;
+CREATE TABLE Employees (
+    Id INT AUTO_INCREMENT PRIMARY KEY,
+    Name VARCHAR(100) NOT NULL,
+    Salary INT NOT NULL,
+    DepartmentId INT NOT NULL,
+    FOREIGN KEY (DepartmentId) REFERENCES Departments(Id)
+);
+drop table Employees;
+DELIMITER $$
+CREATE TRIGGER before_employee_insert
+BEFORE INSERT ON Employees
+FOR EACH ROW
+BEGIN
+    DECLARE rowcount INT;
+    SELECT COUNT(*) INTO rowcount
+    FROM Departments
+    WHERE Id = NEW.DepartmentId;  
+    IF rowcount = 0 THEN
+        INSERT INTO EmployeeInsertLog (EmployeeName, DepartmentId, Message, Timestamp)
+        VALUES (NEW.Name, NEW.DepartmentId, 'Department does not exist', NOW());
+        SET NEW.DepartmentId = 1;
+    END IF;
+END $$
+DELIMITER ;
